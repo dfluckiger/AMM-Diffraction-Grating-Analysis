@@ -12,8 +12,7 @@ The aim of the AMM scripts is to provide examples of the AMM method for diffract
 AMM is implemented following the lead of I. Botten, M Craiag, R. McPhedran, J. Adams, J. Andrewartha, ‘The dielectric lamellar diffraction grating,’ Optica Acta, 28(3) 413-428 (1981). Piecewise-analytic solution of Helmholtz equations are found for gratings modeled in the piecwise constant multi-layer model. 
 
 ## Scientific work
-If the code is used in a scientific work, then **reference should be made to the following publication**:
-1. 
+1. D. Fluckiger, 'The Analyltic Modal Method Algorithm,'
 
 ---
 ## Manual
