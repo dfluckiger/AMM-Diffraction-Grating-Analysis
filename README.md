@@ -24,26 +24,46 @@ AMM is implemented following the lead of I. Botten, M Craiag, R. McPhedran, J. A
 3. Free parameters (tuning) are found in root-polishing rootYasmin.m which control root resolution, number of iterations, root location failure limits. These limits are currently hard-wired, but experimentation is encouraged to find optimal values, which likely depend on grating layer parameters.
  
 ## Short description of the scripts and files
--[DC sweepCWA_AMM_51modes_A.mp4]DC sweepCWA_AMM_51modes_X.mp4 - Animation of couple wave (CWA) DC sweep with N=51 orders, CWA roots show as red stars, AMM true roots as green circles. There are four segments (A, B, C, D) to cover the full sweep.
--[DC sweepCWA_AMM_201modes_A.mp4]DC sweepCWA_AMM_201modes_X.mp4 - Animation of couple wave (CWA) DC sweep compared with AMM with N = 2011, shows both anomalies and omissions of roots (X = A,B,C,D; break up sweep to 4 segments).
+-[DC sweepCWA_AMM_51modes_A.mp4]DC sweepCWA_AMM_51modes_X.mp4 - Animation of couple wave (CWA) DC sweep with N=51 orders, CWA roots show as red stars, AMM true roots as green circles. There are four segments (A, B, C, D) to cover the full sweep
+
+-[DC sweepCWA_AMM_201modes_A.mp4]DC sweepCWA_AMM_201modes_X.mp4 - Animation of couple wave (CWA) DC sweep compared with AMM with N = 2011, shows both anomalies and omissions of roots (X = A,B,C,D; break up sweep to 4 segments)
+
 -[AMM_mainDCSweep.m]AMM_mainDCSweep.m - AMM DC sweep of single layer, two region grating
+
 -[AMM_mainLambdaSweep.m]AMM_mainLambdaSweep.m - AMM wavelength sweep, multilayer-blaze profile in aluminum (high MP required for first few roots)
+
 -[AMM_mainThetaSweep.m]AMM_mainThetaSweep.m - AMM theta sweep (angle of incidence), multilayer-blaze profile in glass
+
 -[BoundaryMatrix.m]BoundaryMatrix.m - Construct the boundary condition matrix for all layers, as each layer is solved for
+
 -[dEigEq.m]dEigEq.m - Solve for the derivative (with respect to mu) of the eigenvalue equation
+
 -[Drude.m]Drude.m -	Drude model of the index of refraction for several metals
+
 -[EigEq.m]EigEq.m -	Solve the eigenvalue equation at some mu give the layer grating parameters
+
 -[FindNextNode.m]FindNextNode.m - Part of the GRPF root finding algorithm,  finds the next node in the candidate boundary creation process
+
 -[FindRootsGRPF.m]FindRootsGRPF.m - Main driver to find N roots of a layer grating structure
+
 -[GRPF.m]GRPF.m - Main entry point of the GRPF algorithm
+
 -[plotEigEq.m]plotEigEq.m - Generates a contour plot of the log magnitude of the eigenvalue equation
+
 -[QY2x2.m]QY2x2.m -	Solve for the theta and psi, and Field eigenfunctions for a given grating layer structure
+
 -[rectdom.m]rectdom.m - Generate the starting nodes of a rectangular region of the complex plane (for GRPF)
+
 -[rootYasmin.m]rootYasmin.m -	Solve for a root of the eigeq given a starting point ‘guess’ using 4th order method
+
 -[Schott.m]Schott.m - Give index of refraction of a catalogue material according to the Schott formula
+
 -[Sellmeier.m]Sellmeier.m - Ggive index of refraction of a catalogue material according to the Sellmeier formula
+
 -[TableNK.m]TableNK.m -	Give index of refraction for materials in table form using cubic interpolation between entries
+
 -[vinq.m]vinq.m - Rreturns phase quadrant of complex number (used in GRPF)
+
 -[zShift.m]zShift.m - Constrains a complex number to remain within a defined rectangle
 
 ## Additional comments
