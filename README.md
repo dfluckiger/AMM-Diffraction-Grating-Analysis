@@ -24,9 +24,8 @@ AMM is implemented following the lead of I. Botten, M Craiag, R. McPhedran, J. A
 3. Free parameters (tuning) are found in root-polishing rootYasmin.m which control root resolution, number of iterations, root location failure limits. These limits are currently hard-wired, but experimentation is encouraged to find optimal values, which likely depend on grating layer parameters.
  
 ## Short description of the scripts and files
--[(1, 10i) DC sweepCWA.mp4](1, 10i) DC sweepCWA.mp4 - Animation of couple wave (CWA) DC sweep with N=51 orders, CWA roots show as red dots, true roots as green circles.
--[DC sweepCWA_AMM_51modes_X.mp4]DC sweepCWA_AMM_51modes_X.mp4 - Animation of couple wave (CWA) DC sweep compared with AMM with N = 51, shows both anomalies and omissions of roots (X = A,B,C,D; break up sweep to 4 segments).
--[DC sweepCWA_AMM_201modes_X.mp4]DC sweepCWA_AMM_201modes_X.mp4 - Animation of couple wave (CWA) DC sweep compared with AMM with N = 51, shows both anomalies and omissions of roots (X = A,B,C,D; break up sweep to 4 segments).
+-[DC sweepCWA_AMM_51modes_A.mp4]DC sweepCWA_AMM_51modes_X.mp4 - Animation of couple wave (CWA) DC sweep with N=51 orders, CWA roots show as red stars, AMM true roots as green circles. There are four segments (A, B, C, D) to cover the full sweep.
+-[DC sweepCWA_AMM_201modes_A.mp4]DC sweepCWA_AMM_201modes_X.mp4 - Animation of couple wave (CWA) DC sweep compared with AMM with N = 2011, shows both anomalies and omissions of roots (X = A,B,C,D; break up sweep to 4 segments).
 -[AMM_mainDCSweep.m]AMM_mainDCSweep.m - AMM DC sweep of single layer, two region grating
 -[AMM_mainLambdaSweep.m]AMM_mainLambdaSweep.m - AMM wavelength sweep, multilayer-blaze profile in aluminum (high MP required for first few roots)
 -[AMM_mainThetaSweep.m]AMM_mainThetaSweep.m - AMM theta sweep (angle of incidence), multilayer-blaze profile in glass
