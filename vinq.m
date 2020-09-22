@@ -11,8 +11,11 @@ elseif ( real(f)<=0 ) && ( imag(f)>0 )
     w=2;    
 elseif ( real(f)<0 ) && ( imag(f)<=0 )
     w=3;
-else 
-    w=4;    
+elseif ( real(f)>=0 ) && ( imag(f)<0 )
+    w=4;
+else
+    w=NaN;        
 end
+
 
 
