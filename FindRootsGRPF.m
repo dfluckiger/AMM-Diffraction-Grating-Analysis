@@ -1,4 +1,4 @@
-function [Roots, fnVal, itts, RootIsMP,rts] = FindRootsGRPF(N,Gparams,pltIt)
+function [Roots, fnVal, itts, RootIsMP] = FindRootsGRPF(N,Gparams,pltIt)
 %       AMM_mainLambdaSweep
 %       Analytic Modal Method for TE and TM diffraction grating
 %       efficiency calculation of lamellar gratings.
@@ -56,33 +56,79 @@ end
 ni = sqrt(Gparams.ei);
 lambda = 2*pi/Gparams.k0;
 nrts = 0;
-r = lambda/5;					%  r      : initial mesh step
-r1 =max(real(ni))*1.5;	
-i2 = max(imag(ni))+N*lambda/2;
-xb = -0.537;				   %  xb     : real part range begin 
-xe = 1.5*r1+3*r;			%  xe     : real part range end 
-yb = -0.2;				  %  yb     : imag part range begin 
-ye = i2+3*r;				  %  ye     : imag part range end 
-bc = [xb,xe,yb,ye,r];
 
-NewNodesCoord = rectdom(xb,xe,yb,ye,r);
-Tol = .1e-3; % accuracy 
-ItMax=50; % max number of iterations
-NodesMax=500000; % max number of nodes
-SkinnyTriangle=3; % skinny triangle definition
-[nrts,rts,rtsM] = GRPF(NewNodesCoord, Tol, ItMax, NodesMax, SkinnyTriangle, Gparams,bc);
-Uu1 = xe+yb*1i;
-while nrts<=1.2*N	% might need some more roots, for look at adjacent regions moving along imaginary axis
-	imshft = max(4*lambda,lambda*abs(N-nrts)*.6)+3*r;
-	yb = .99*ye;
-	ye = yb + imshft;
-	NewNodesCoord = rectdom(xb,xe,yb,ye,r);
-	[nrts1,rts1,rtsMul] = GRPF(NewNodesCoord, Tol, ItMax, NodesMax, SkinnyTriangle, Gparams, bc);
+% new method to segemeg by rectangles
+Tol = lambda/50;		% accuracy to locate root
+ItMax=50;					% max number of iterations
+NodesMax=500000;   % max number of nodes
+SkinnyTriangle=3;	   % skinny triangle definition
+nrts = 0;
+rts = [];
+rtsM = []; 
+
+[~,id] = sort(imag(ni));
+sni = ni(id);				% index in increasing imag parg
+
+curni = 1;				% keep track of which index branch is current
+xb = -lambda/10;
+xe = 0;
+ye = -lambda/10;
+while nrts < N+5	    % Grab a few more roots than asked for
+	di = 1;
+	if curni>length(sni), curni=length(sni); end
+	if curni <= length(sni)	% not at the last one yet
+		di = sum((imag(sni((curni+1):end)) - imag(sni(curni))) <= lambda);
+		yb = max(real(sni(curni+(0:di))))+lambda;
+		if curni>1 
+			xb = xe-4*Tol;		% catch roots close to border
+			ye = -lambda;
+		end
+		xe = xb+imag(sni(curni+di))+2*lambda;
+		curni = curni+di+1;
+	else			% at or beyond last sni, should have found some root locations
+		er = rts(end);
+		yb = imag(er) + lambda;
+		xb = xe;
+		xe = xe + 2*lambda;
+	end	
+	r = lambda/(4*(di+1));
+	bc = [yb,ye,xb,xe,r];
+	nodes = rectdom(bc);
+	[nrts1,rts1,rtsM1] = GRPF(nodes, Tol, ItMax, NodesMax, SkinnyTriangle, Gparams, bc);
 	nrts = nrts+nrts1;
 	rts = [rts;rts1];
-	rtsM = [rtsM;rtsMul];	% root multiplicity (should == 1)
+	rtsM = [rtsM;rtsM1];	% root multiplicity (should == 1)
 end
-Ll1 = xb+ye*1i;
+[~,id] = sort(imag(rts));     % sort roots on imaginary part
+rts = rts(id);
+rtsM = rtsM(id);
+
+% refine any double roots
+id = (rtsM>1);
+ia = 1:length(rts);
+while any(id)
+	nx = ia(id);
+	Tol = Tol/10;
+	for i = 1:length(nx)	% look at each double root and refine
+		xn = rts(nx(i));
+		rts(nx(i)) = [];
+		rtsM(nx(i)) = [];
+		nx = nx-1;
+		dx = .9*min(abs(rts-xn));
+		r = dx/5;
+		bc = [real(xn)-dx,real(xn)+dx,imag(xn)-dx,imag(xn)+dx,r];
+		nodes = rectdom(bc);
+		[~,rts1,rtsM1] = GRPF(nodes, Tol, ItMax, NodesMax, SkinnyTriangle, Gparams, bc);
+		rts = [rts;rts1];
+		rtsM = [rtsM;rtsM1];
+	end
+	[~,id] = sort(imag(rts));     % sort roots on imaginary part
+	rts = rts(id);
+	rtsM = rtsM(id);
+	ia = 1:length(rts);
+	id =  (rtsM>1);
+end
+
 ul = lambda*(1-1i)*.5;
 lr = lambda*(-1+1i)*.5;
 Roots = [];
@@ -90,47 +136,28 @@ fnVal = [];
 itts = [];
 RootIsMP = [];
 mpN = Gparams.mpN;
-
+ 
 for i = 1:length(rts)
-	if imag(rts(i))<0, rts(i) = -rts(i); end
+	%if imag(rts(i))<=0, rts(i) = -rts(i); end
 	xtry = rts(i);
-	if rtsM(i) == 1
-		[xn,feVal,itt,~] = rootYasmin(xtry,xtry+ul,xtry+lr,Gparams,true);
-		if isnan(xn)
-			[xn,feVal,itt,~] = rootYasmin(mp(xtry,mpN),xtry+ul,xtry+lr,Gparams,true);
-		end
-		if abs(imag(xn)) < 1E-6   % look out for 'conj' on real axis, take only positive one
-			xn = abs(real(xn));
-		end
-		if ~isnan(xn) 
-			if ~isempty(Roots)
-				if min(min(abs(Roots+conj(xn)')))>1E-5 && min(abs(Roots-xn))>1E-5 
-				    Roots = [Roots,xn];         % accumulate roots
-				    fnVal = [fnVal,double(feVal)];
-				    itts = [itts,itt];
-				    RootIsMP = [RootIsMP,ismp(xn)];
-				end
-			 else
-				Roots = [Roots,xn];             % accumulate roots
-				fnVal = [fnVal,double(feVal)];
-				itts = [itts,itt];
-				RootIsMP = [RootIsMP,ismp(xn)];
+	[xn,feVal,itt,~] = rootYasmin(xtry,xtry+ul,xtry+lr,Gparams,true);
+	if isnan(xn)
+		[xn,feVal,itt,~] = rootYasmin(mp(xtry,mpN),xtry+ul,xtry+lr,Gparams,true);
+	end
+	if ~isnan(xn) 
+		if ~isempty(Roots)
+			if min(min(abs(Roots+conj(xn)')))>1E-5 && min(abs(Roots-xn))>1E-5 
+			    Roots = [Roots,xn];         % accumulate roots
+			    fnVal = [fnVal,double(feVal)];
+			    itts = [itts,itt];
+			    RootIsMP = [RootIsMP,ismp(xn)];
 			end
+		 else
+			Roots = [Roots,xn];             % accumulate roots
+			fnVal = [fnVal,double(feVal)];
+			itts = [itts,itt];
+			RootIsMP = [RootIsMP,ismp(xn)];
 		end
-	else
-		xtry = box2Root(xtry+ul,xtry+lr,Gparams,0.1);  
-		[xn1,feVal1,itt1,~] = rootYasmin(xtry(1),ul,lr,Gparams,false);  % find both roots, check nan status as with 1 root
-		if isnan(xn1)
-			[xn1,feVal1,itt1,~] = rootYasmin(mp(xtry(1)),ul,lr,Gparams,false);
-		end
-		[xn2,feVal2,itt2,~] = rootYasmin(xtry(2),ul,lr,Gparams,false);
-		if isnan(xn2)
-			[xn2,feVal2,itt2,~] = rootYasmin(mp(xtry(2)),ul,lr,Gparams,false);
-		end
-		Roots = [Roots,xn1,xn2];
-		fnVal = [fnVal,feVal1,feVal2];
-		itts = [itts, itt1, itt2];
-		RootIsMP = [RootIsMP, 0, 0];
 	end
 end		
 [~,id] = sort(imag(Roots));     % sort roots on imaginary part

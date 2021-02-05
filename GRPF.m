@@ -21,6 +21,8 @@ NrOfNodes=0;
 Quadrants = [];
 
 fun = @(z) EigEq(z,Gparams);
+%fun = @(z) (z-1)*(z-1i).^2*(z+1)^3./(z+1i);
+
 r = bc(end)/2;
 xb = bc(1)+r; xe = bc(2)-r; yb = bc(3)+r; ye = bc(4)-r; 
 Uul = xe + yb*1i;
@@ -28,7 +30,7 @@ Llr = xb + ye*1i;
 %% general loop
 warning('off','all');
 it=0;
-while it<ItMax&&NrOfNodes<NodesMax
+while it<ItMax && NrOfNodes<NodesMax
     it=it+1;
     NodesCoord=[NodesCoord ; NewNodesCoord];
     
@@ -50,9 +52,35 @@ while it<ItMax&&NrOfNodes<NodesMax
     NrOfElements=size(Elements,1);  
     PhasesDiff=mod(Quadrants(Edges(:,1))-Quadrants(Edges(:,2)),4);
     CandidateEdges=Edges(PhasesDiff==2|isnan(PhasesDiff),:);
-       
-    if isempty(CandidateEdges)
-	    rts = 0;
+	
+%    vis( NodesCoord, Edges, Quadrants, PhasesDiff)
+%    figure(4)
+%	triplot(DT)
+%	hold on;
+%	xy =  [NodesCoord(CandidateEdges(:,1),:),NodesCoord(CandidateEdges(:,2),:)];
+%	for i = 1:size(xy,1)
+%		px = [xy(i,1);xy(i,3)];
+%		py = [xy(i,2);xy(i,4)];
+%		line(px,py,'Linewidth',3);
+%	end
+%
+%	for i = 1:length(Quadrants)
+%		switch abs(Quadrants(i))
+%			case 1
+%				plot(NodesCoord(i,1),NodesCoord(i,2),'*r');
+%			case 2
+%				plot(NodesCoord(i,1),NodesCoord(i,2),'*y');
+%			case 3
+%				plot(NodesCoord(i,1),NodesCoord(i,2),'*g');
+%			case 4
+%				plot(NodesCoord(i,1),NodesCoord(i,2),'*b');
+%		end
+%	end
+%	hold off;
+%	drawnow;
+ 
+	if isempty(CandidateEdges)
+	    rts = [];
 	    nrts = 0;
 	    rtsMul = [];
         return
@@ -84,7 +112,7 @@ while it<ItMax&&NrOfNodes<NodesMax
     
     ArrayOfCandidateElements = vertexAttachments(DT,CandidateNodes);
     Temp=zeros(NrOfElements,1);
-    for k=1:size(ArrayOfCandidateElements,1)
+    for k = 1:size(ArrayOfCandidateElements,1)
         Temp(ArrayOfCandidateElements{k})=Temp(ArrayOfCandidateElements{k})+1;
     end 
     
@@ -94,7 +122,7 @@ while it<ItMax&&NrOfNodes<NodesMax
     NoOfFirsrZoneCandidateElements=size(IDOfFirstZoneCandidateElements,1);
     FirstZoneCandidateElements=Elements(IDOfFirstZoneCandidateElements,:);    
          
-    for k=1:NoOfFirsrZoneCandidateElements      
+    for k = 1:NoOfFirsrZoneCandidateElements      
         TempExtraEdges((k-1)*3+1,:)=[FirstZoneCandidateElements(k,1) FirstZoneCandidateElements(k,2)];
         TempExtraEdges((k-1)*3+2,:)=[FirstZoneCandidateElements(k,2) FirstZoneCandidateElements(k,3)];
         TempExtraEdges((k-1)*3+3,:)=[FirstZoneCandidateElements(k,3) FirstZoneCandidateElements(k,1)];      
@@ -102,7 +130,7 @@ while it<ItMax&&NrOfNodes<NodesMax
     
     NewNodesCoord=sum(NodesCoord(TempExtraEdges(1,:),:))/2;
     
-    for k=2:3*NoOfFirsrZoneCandidateElements
+    for k = 2:3*NoOfFirsrZoneCandidateElements
         CoordOfTempEdgeNode1=NodesCoord(TempExtraEdges(k,1),:);
         CoordOfTempEdgeNode2=NodesCoord(TempExtraEdges(k,2),:);
         TempNodeCoord=(CoordOfTempEdgeNode1+CoordOfTempEdgeNode2)/2;
@@ -125,7 +153,7 @@ while it<ItMax&&NrOfNodes<NodesMax
     end
     NoOfSecondZoneCandidateElements=size(IDOfSecondZoneCandidateElements,1);
     SecondZoneCandidateElements=Elements(IDOfSecondZoneCandidateElements,:);         
-    for k=1:NoOfSecondZoneCandidateElements  
+    for k = 1:NoOfSecondZoneCandidateElements  
         NodesInTempElement=SecondZoneCandidateElements(k,:);
         Node1Coord=NodesCoord(NodesInTempElement(1),:);
         Node2Coord=NodesCoord(NodesInTempElement(2),:);
@@ -143,7 +171,7 @@ end
 % Evaluation of contour edges from all candidates edges 
 ArrayOfCandidateElements = edgeAttachments(DT,CandidateEdges(:,1),CandidateEdges(:,2));
 Temp=zeros(NrOfElements,1);
-for k=1:size(ArrayOfCandidateElements,1)
+for k = 1:size(ArrayOfCandidateElements,1)
     Temp(ArrayOfCandidateElements{k})=1;
 end
 
@@ -153,7 +181,7 @@ CandidateElements=Elements(IDOfCandidateElements,:);
 
 TempEdges=zeros(NoOfCandidateElements*3,2);
 
-for k=1:NoOfCandidateElements
+for k = 1:NoOfCandidateElements
     TempEdges((k-1)*3+1,:)=[CandidateElements(k,1) CandidateElements(k,2)];
     TempEdges((k-1)*3+2,:)=[CandidateElements(k,2) CandidateElements(k,3)];
     TempEdges((k-1)*3+3,:)=[CandidateElements(k,3) CandidateElements(k,1)];
@@ -162,7 +190,7 @@ end
 % Reduction of edges to contour
 MultiplicationOfTempEdges=zeros(3*NoOfCandidateElements,1);
 RevTempEdges=fliplr(TempEdges);
-for k=1:3*NoOfCandidateElements
+for k = 1:3*NoOfCandidateElements
     if MultiplicationOfTempEdges(k)==0
         NoOfEdge=find(RevTempEdges(:,1)==TempEdges(k,1)&RevTempEdges(:,2)==TempEdges(k,2));
         if isempty(NoOfEdge)
@@ -199,8 +227,7 @@ while size(ContourEdges,1)>0
             TempNodes=ContourEdges(IndexOfNextEdge,2);            
             Index= FindNextNode(NodesCoord,PrevNode,RefNode,TempNodes);           
             IndexOfNextEdge=IndexOfNextEdge(Index);
-        end
-       
+	   end
         NextEdge=ContourEdges(IndexOfNextEdge,:);
         Regions{NoOfRegions}=[Regions{NoOfRegions} ContourEdges(IndexOfNextEdge,1)];
         RefNode=ContourEdges(IndexOfNextEdge,2);
@@ -210,7 +237,7 @@ end
 
 Regions{NoOfRegions}=[Regions{NoOfRegions} RefNode];
 
-for k=1:NoOfRegions
+for k = 1:NoOfRegions
     QuadrantSequence=Quadrants(Regions{k});
     dQ=QuadrantSequence(2:end)-QuadrantSequence(1:end-1);
     dQ(dQ==3)=-1;

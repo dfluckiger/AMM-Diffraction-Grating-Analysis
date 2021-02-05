@@ -50,15 +50,14 @@ lambda = .6328/Period;       % Vacuum wavelength, then normalized
 theta = 30;                               % Angle of incidence [degrees] measured from the -z-axis
 TMflag = true;                        % Set problem type (TE, or TM)	
 										% index of refraction of the substrate (table model)
-nk = TableNK('AL',lambda*Period);
+nk = TableNK('AU',lambda*Period);
 %n3 = nk(1)+1i*nk(2);              % substrate index (real or complex)
 % for the A. Khavasi, et. al., January 15, 2008 / Vol. 33, No. 2 / OPTICS LETTERS, much studied grating set n3 = 10i;
 n3 = 10i;
 
-N = 51;                                      % number of eigen-Roots to include in grating layer, integer
+N = 40;                                      % number of eigen-Roots to include in grating layer, integer
 FN = 59;                                    % total number of Fourier Modes (odd integer) to expand eigenfunctions in Rayleigh basis
 
-pathN = 5;                               % for display of roots: number of points/side of 'box' to plot
 mpN = 34;                               % Multi-precision decimal digits, when needed; default quad-precision (34 decimal digits)
 
 
@@ -124,7 +123,7 @@ maxAB = -100;					  % for graphing purposes, find maximum of a, b (eigenfunction
 
 BC = complex(zeros(FN*2*length(dlayers),N*2*length(dlayers)));      % matrix to hold Bondary Condition Matrix
 
-sweep = linspace(0.01,0.99,801);			% Duty Cycle sweep
+sweep = linspace(0.01,0.99,500);			% Duty Cycle sweep
 
 Bragg = asin(n1*lambda)*180/pi;		% need to trap the Bragg angle with k1z or k3z may be singular
 DEref = zeros(length(sweep), 5);			% someplace to put the DE, look at a few modes, 
@@ -136,7 +135,7 @@ MPneeded = ones(length(sweep),1);		% MP flags use of MP to find roots
 pltIt = false;        % flag to compute and plot eigenvalue equation with roots, and search boxes
 kk = 1;                  % loop counter
 % interest in plotting out the Eigenfunctions in real space (in % x-direction)
-xx = linspace(0,1,751)';	
+xx = linspace(0,1,750)';	
 EE = complex(zeros(length(xx),N));
 
 % for DC variation, angle dependencies are fixed (calculate once)
@@ -161,7 +160,6 @@ id = find(imag(kz3)<0);
 kz3(id) = -kz3(id);  
 
 for tau =  sweep		% Duty-cycle sweep
-
 	
       % loop through each layer, create/update Stack matrix
       for j = 1:length(dlayers)   % number of layers
@@ -181,6 +179,7 @@ for tau =  sweep		% Duty-cycle sweep
            Gparams.di = di{j};
            
 		 [rts, fnV, itt, rtsMPflg] = FindRootsGRPF(N,Gparams,pltIt);
+		 %[rts, fnV, itt, rtsMPflg] = FindRootsCWA2(N,Gparams,pltIt);
            Roots(j,:) = double(rts(1:N));		%note this converts to double, keep mp for J, K calculation!
            fnVal(j,:) = fnV(1:N);
            itts(j,:) = itt(1:N);
@@ -190,18 +189,18 @@ for tau =  sweep		% Duty-cycle sweep
            for jj = 1:N                 % for each root find Fourier-Rayleigh eigenfunction expansion
               mu = rts(jj);
 		    if ~rtsMPflg(jj), mu = double(mu); end
-              [fY,eigCoe] = EigEq(mu,Gparams);
+              [~,eigCoe] = EigEq(mu,Gparams);
               [an, kan] = AB2FourCoef2(fN,xi{j},eigCoe,kx0);  % if root is an MP number, must calculate an/kan in MP arithmetic, then convert to double
               J(:,jj) = double(an);
               K(:,jj) = double(kan);  % K for TM mode, with 1/ei in integral
 			    % calculate eigenfunctions as a function of xx here
 			    % (uncomment if you want these)
 			    % only need double precision for fields
-		    %mu = double(rts(jj));
-              %[fY,eigCoe] = EigEq(mu,Gparams);
-		    %[Q,Y,Qp,Yp,E,ex] = QY2x2(xx,xi{j},kx0,eigCoe);
-		    %nm = sqrt(trapz(xx,E.*conj(E)./abs(ex)));  %eigenfunction normalization 
-              %EE(:,jj) = (E.*exp(-kx0*1i*xx)/nm);
+		    mu = double(rts(jj));
+              [~,eigCoe] = EigEq(mu,Gparams);
+		    [Q,Y,Qp,Yp,E,ex] = QY2x2(xx,xi{j},kx0,eigCoe);
+		    nm = sqrt(trapz(xx,E.*conj(E)./abs(ex)));  %eigenfunction normalization 
+              EE(:,jj) = (E.*exp(-kx0*1i*xx)/nm);
 		 end
 		 		 
 		 % build boundary condition matrix here
