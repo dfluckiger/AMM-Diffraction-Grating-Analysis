@@ -140,10 +140,11 @@ mpN = Gparams.mpN;
 for i = 1:length(rts)
 	%if imag(rts(i))<=0, rts(i) = -rts(i); end
 	xtry = rts(i);
-	[xn,feVal,itt,~] = rootYasmin(xtry,xtry+ul,xtry+lr,Gparams,true);
-	if isnan(xn)
-		[xn,feVal,itt,~] = rootYasmin(mp(xtry,mpN),xtry+ul,xtry+lr,Gparams,true);
-	end
+	%[xn,feVal,itt,~] = rootYasmin(xtry,xtry+ul,xtry+lr,Gparams,false);
+	[xn,feVal,itt,~] = rootNewton(xtry,xtry+ul,xtry+lr,Gparams,false);
+	%if isnan(xn)
+	%	[xn,feVal,itt,~] = rootYasmin(mp(xtry,2*mpN),xtry+ul,xtry+lr,Gparams,false);
+	%end
 	if ~isnan(xn) 
 		if ~isempty(Roots)
 			if min(min(abs(Roots+conj(xn)')))>1E-5 && min(abs(Roots-xn))>1E-5 
